@@ -36,17 +36,25 @@ lift.on('up', (passenger)=>{
   // Defensive coding, only change the passenger if one was supplied.
   if (passenger){
     lift.passenger = passenger;
+    console.log('Picked up', lift.passenger.name);
   }
+  //increment the floor
+  lift.currentFloor++;
+  console.log('Lift is now on floor', lift.currentFloor);
 
   setTimeout(()=>{
-      // Add your own code after here.
+      //check if we need to put off whoever is riding
+      if(lift.currentFloor === lift.passenger.destination){
+        console.log(lift.passenger.name, 'has reached floor #' + lift.passenger.destination);
+        lift.passenger = {};
+        lift.emit('down');
+      } else {
+        // emitting up without a new passenger
+        // so the current person stays in tact
+        lift.emit('up');
+      }
 
-      console.log("I'm going up, wankers!");
-
-      // you probably shouldn't keep the following in your version.
-      // just here for demonstration purposes.
-      lift.emit('down');
-  }, 1000)
+  }, 1000);
 
 });
 
@@ -56,19 +64,27 @@ lift.on('up', (passenger)=>{
 
 
 lift.on('down', ()=>{
+  //decrement the floor.
+  lift.currentFloor--;
+  console.log('Lift is now on floor', lift.currentFloor);
 
   setTimeout(()=>{
-    // Add your own code after here.
+    // check what floor the elevator is on
+    if(lift.currentFloor != 1){
+      //go down a floor
+      lift.emit('down');
+    } else {
+      // grab the next person since we're on the 1st floor
+      // only if there is someone to grab.
+      if (tenants.length > 0){
+        lift.emit('up', tenants.pop());
+      } else {
+        console.log('All tenants are at their respective floors.');
+      }
+    }
+  }, 1000);
 
-    console.log("Bullocks, I'm going down...");
-  }, 1000)
+});
 
-})
-
-
-
-
-
-// run node app.js and take note of what happens.
-// what happens if you change it to 'down'?
+// Let's get down to business
 lift.emit('up', tenants.pop() );
